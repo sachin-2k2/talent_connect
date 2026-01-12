@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:talentconnect/client/chat.dart';
 import 'package:talentconnect/freelancer/Viewfeedback.dart';
 import 'package:talentconnect/freelancer/manage_bookings.dart';
+import 'package:talentconnect/freelancer/manageportfolio.dart';
+import 'package:talentconnect/freelancer/myportfolio.dart';
 import 'package:talentconnect/freelancer/payement_status.dart';
 import 'package:talentconnect/loginpage.dart';
 
@@ -91,7 +93,7 @@ class _HomefreelancerState extends State<Homefreelancer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Manage_bookings(),
+                          builder: (context) => PortfolioPage(),
                         ),
                       );
                     },

@@ -7,6 +7,7 @@ import 'package:talentconnect/freelancer/home.dart';
 import 'package:talentconnect/freelancer/manage_bookings.dart';
 import 'package:talentconnect/freelancer/payement_status.dart';
 import 'package:talentconnect/freelancer/register.dart';
+import 'package:talentconnect/loginpage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Homefreelancer(),
+      home: LogninPage(),
     );
   }
 }

@@ -11,6 +11,7 @@ class _Manage_bookingsState extends State<Manage_bookings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(248, 255, 255, 255),
       body: SafeArea(
         child: Center(
           child: Column(

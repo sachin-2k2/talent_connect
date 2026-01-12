@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:talentconnect/freelancer/register.dart';
+import 'package:talentconnect/loginpage.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -11,6 +13,42 @@ TextEditingController name = TextEditingController();
 TextEditingController Password = TextEditingController();
 TextEditingController email = TextEditingController();
 TextEditingController phono = TextEditingController();
+
+Future<void> post_regclient(context) async {
+  try {
+    final response = await dio.post(
+      '$baseurl/Client',
+      data: {
+        'Fullname': name.text,
+        'Phone': phono.text,
+        'Email': email.text,
+        'Username': email.text,
+        'Password': Password.text,
+      },
+    );
+
+    print(response.data);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LogninPage()),
+      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('registration successful')));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('registration failed')));
+    }
+  } catch (e) {
+    print(e);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Location or registration error')));
+  }
+}
 
 class _RegisterPageState extends State<RegisterPage> {
   @override
@@ -166,7 +204,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               SizedBox(height: 30),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  post_regclient(context);
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   minimumSize: Size(150, 45),

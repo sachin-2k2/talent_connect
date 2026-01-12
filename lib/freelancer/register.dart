@@ -1,19 +1,113 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:talentconnect/loginpage.dart';
+import 'package:geolocator/geolocator.dart';
 
 class RegisterPagefreelancer extends StatefulWidget {
   const RegisterPagefreelancer({super.key});
 
   @override
-  State<RegisterPagefreelancer> createState() => _RegisterPagefreelancerState();
+  State<RegisterPagefreelancer> createState() =>
+      _RegisterPagefreelancerState();
 }
 
+// ---------------- CONTROLLERS ----------------
 TextEditingController name = TextEditingController();
 TextEditingController Password = TextEditingController();
 TextEditingController email = TextEditingController();
 TextEditingController phono = TextEditingController();
 TextEditingController job = TextEditingController();
 
-class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
+// ---------------- LOCATION ----------------
+double? latitude;
+double? longitude;
+
+// ---------------- API ----------------
+final dio = Dio();
+final baseurl = 'http://192.168.1.63:5000';
+
+// ---------------- GET CURRENT LOCATION ----------------
+Future<void> getCurrentLocation() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    throw Exception('Location services are disabled');
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      throw Exception('Location permission denied');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    throw Exception('Location permission permanently denied');
+  }
+
+  Position position = await Geolocator.getCurrentPosition(
+    desiredAccuracy: LocationAccuracy.high,
+  );
+
+  latitude = position.latitude;
+  longitude = position.longitude;
+}
+
+// ---------------- REGISTER API ----------------
+Future<void> post_reg(context) async {
+  try {
+    await getCurrentLocation(); // 📍 get location first
+
+    final response = await dio.post(
+      '$baseurl/freelancer',
+      data: {
+        'Fullname': name.text,
+        'Phone': phono.text,
+        'Description': job.text,
+        'Email': email.text,
+        'Username': email.text,
+        'Password': Password.text,
+        'Latitude': latitude,   // ✅ sent to backend
+        'Longitude': longitude, // ✅ sent to backend
+      },
+    );
+
+    print(response.data);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LogninPage()),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('registration successful')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('registration failed')),
+      );
+    }
+  } catch (e) {
+    print(e);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Location or registration error')),
+    );
+  }
+}
+
+
+// ---------------- UI ----------------
+class _RegisterPagefreelancerState
+    extends State<RegisterPagefreelancer> {
+      @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCurrentLocation();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,19 +118,14 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-
-            // ********** CLIP THE INSIDE OF THE CARD **********
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
-
               child: Container(
                 height: 700,
                 width: double.infinity,
                 color: Colors.white,
-
                 child: Stack(
                   children: [
-                    // *********** BOTTOM-LEFT TRIANGLE ***********
                     Positioned(
                       bottom: -40,
                       left: -40,
@@ -45,21 +134,17 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
                         painter: RotatedTrianglePainter(),
                       ),
                     ),
-
-                    // *********** TOP-RIGHT TRIANGLE ***********
                     Positioned(
                       top: -50,
                       right: -40,
                       child: Transform.rotate(
-                        angle: 3.14159, // Rotate 180 degrees to mirror
+                        angle: 3.14159,
                         child: CustomPaint(
                           size: const Size(200, 200),
                           painter: RotatedTrianglePainter(),
                         ),
                       ),
                     ),
-
-                    // *********** PAGE CONTENT ***********
                     Center(
                       child: SafeArea(
                         child: SingleChildScrollView(
@@ -81,12 +166,7 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
                               Text(
                                 'Unlock Your Future',
                                 style: TextStyle(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    22,
-                                    121,
-                                    202,
-                                  ),
+                                  color: Color.fromARGB(255, 22, 121, 202),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -101,15 +181,13 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
                               Text(
                                 'Join us to find the perfect talent',
                                 style: TextStyle(
-                                  color: const Color.fromARGB(130, 0, 0, 0),
+                                  color: Color.fromARGB(130, 0, 0, 0),
                                 ),
                               ),
                               SizedBox(height: 30),
                               Customfield(
-                                prefix: Icon(
-                                  Icons.person_2_outlined,
-                                  color: Colors.black38,
-                                ),
+                                prefix: Icon(Icons.person_2_outlined,
+                                    color: Colors.black38),
                                 hinttext: 'Fullname',
                                 controller: name,
                                 validator: (value) {
@@ -120,10 +198,8 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
                               ),
                               SizedBox(height: 10),
                               Customfield(
-                                prefix: Icon(
-                                  Icons.phone_outlined,
-                                  color: Colors.black38,
-                                ),
+                                prefix: Icon(Icons.phone_outlined,
+                                    color: Colors.black38),
                                 hinttext: 'Phone Number',
                                 controller: phono,
                                 validator: (value) {
@@ -132,12 +208,10 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
                                   }
                                 },
                               ),
-                              SizedBox(height: 10,),
-                               Customfield(
-                                prefix: Icon(
-                                  Icons.phone_outlined,
-                                  color: Colors.black38,
-                                ),
+                              SizedBox(height: 10),
+                              Customfield(
+                                prefix: Icon(Icons.work_outline,
+                                    color: Colors.black38),
                                 hinttext: 'Job Description',
                                 controller: job,
                                 validator: (value) {
@@ -148,40 +222,37 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
                               ),
                               SizedBox(height: 10),
                               Customfield(
-                                prefix: Icon(
-                                  Icons.email_outlined,
-                                  color: Colors.black38,
-                                ),
+                                prefix: Icon(Icons.email_outlined,
+                                    color: Colors.black38),
                                 hinttext: 'Email',
                                 controller: email,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Enter your Email';
-                                  } else if (!value.contains('@') &&
-                                      !value.endsWith('@gmail.com')) {
+                                  } else if (!value.contains('@')) {
                                     return 'Enter a valid email';
                                   }
                                 },
                               ),
                               SizedBox(height: 10),
                               Customfield(
-                                prefix: Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.black38,
-                                ),
+                                prefix: Icon(Icons.lock_outline,
+                                    color: Colors.black38),
                                 hinttext: 'Password',
                                 controller: Password,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Enter your Password';
                                   } else if (value.length < 6) {
-                                    return 'Password must contain 6 charecters';
+                                    return 'Password must contain 6 characters';
                                   }
                                 },
                               ),
                               SizedBox(height: 20),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  post_reg(context);
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   minimumSize: Size(150, 45),
@@ -210,6 +281,7 @@ class _RegisterPagefreelancerState extends State<RegisterPagefreelancer> {
   }
 }
 
+// ---------------- TRIANGLE PAINTER ----------------
 class RotatedTrianglePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -224,17 +296,9 @@ class RotatedTrianglePainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final path = Path();
-
-    // Start at top-left (new apex)
     path.moveTo(0, 0);
-
-    // Go to bottom-left
     path.lineTo(0, size.height);
-
-    // Go to bottom-right
     path.lineTo(size.width, size.height);
-
-    // Close back to top-left
     path.close();
 
     canvas.drawPath(path, paint);
@@ -244,11 +308,13 @@ class RotatedTrianglePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+// ---------------- CUSTOM FIELD ----------------
 class Customfield extends StatelessWidget {
   final String hinttext;
   final TextEditingController controller;
   final String? Function(String?)? validator;
   final Icon prefix;
+
   Customfield({
     super.key,
     required this.hinttext,
